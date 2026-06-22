@@ -1,0 +1,43 @@
+# Unconditional KSE flow-matching prior (S3FM-Gauss). Pilot settings.
+experiment:
+  name: kse_flow_prior_info
+  seed: 0
+
+data:
+  system: kse
+  # KSE generation (ETDRK4). Kept configurable to match external references later.
+  L: 22.0
+  Nx: 64
+  dt: 0.25
+  n_steps: 1200          # frames per trajectory (after warmup)
+  warmup_steps: 200
+  n_trajectories: 24     # more trajectories -> a real prior, not an overfit
+  ic_scale: 0.6
+  # windows
+  window_length: 20
+  stride: 4
+  # splits
+  train_frac: 0.6
+  val_frac: 0.2
+  split_seed: 0
+  normalization: channel_standardization
+
+model:
+  base_channels: 96
+  depth: 4
+  t_emb_dim: 96
+
+train:
+  device: auto           # auto | cpu | mps | cuda
+  batch_size: 64
+  steps: 4000
+  lr: 0.0003
+  ema_decay: 0.999
+  val_every: 200
+  log_every: 100
+  ckpt_every: 1000
+
+source:
+  kind: spectral
+  cutoff_k: 8
+  eta_std: 0.05

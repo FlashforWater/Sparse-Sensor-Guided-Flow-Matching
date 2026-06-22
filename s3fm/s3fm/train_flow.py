@@ -28,6 +28,7 @@ from .data.splits import ChannelStandardizer, make_splits
 from .data.windows import add_channel_axis, extract_windows
 from .flow.ema import EMA
 from .flow.paths import endpoint_estimate, flow_matching_loss, interpolate_path
+from .flow.sources import SourceConfig, make_source
 from .flow.training import gaussian_source_like
 from .logging_utils import JsonlLogger
 from .models.video_unet_velocity import VideoUNetVelocity1D
@@ -56,11 +57,14 @@ def build_windows(dcfg: dict):
 
 
 @torch.no_grad()
-def endpoint_recovery_nrmse(model, val_x, device, s_val=0.9, seed=123):
+def endpoint_recovery_nrmse(model, val_x, device, s_val=0.9, seed=123, source_cfg=None):
     """Mean nRMSE of X1_hat vs true Z1 at flow_time s_val (held-out windows)."""
     model.eval()
     g = torch.Generator().manual_seed(seed)
-    z0 = torch.randn(val_x.shape, generator=g).to(device)
+    if source_cfg is None:
+        z0 = torch.randn(val_x.shape, generator=g).to(device)
+    else:
+        z0 = make_source(val_x, source_cfg, generator=g).to(device)
     z1 = val_x.to(device)
     s = torch.full((val_x.shape[0],), s_val, device=device)
     zs = interpolate_path(z0, z1, s)
@@ -69,10 +73,13 @@ def endpoint_recovery_nrmse(model, val_x, device, s_val=0.9, seed=123):
 
 
 @torch.no_grad()
-def val_fm_loss(model, val_x, device, seed=7):
+def val_fm_loss(model, val_x, device, seed=7, source_cfg=None):
     model.eval()
     g = torch.Generator().manual_seed(seed)
-    z0 = torch.randn(val_x.shape, generator=g).to(device)
+    if source_cfg is None:
+        z0 = torch.randn(val_x.shape, generator=g).to(device)
+    else:
+        z0 = make_source(val_x, source_cfg, generator=g).to(device)
     z1 = val_x.to(device)
     s = torch.rand(val_x.shape[0], generator=g).to(device)
     zs = interpolate_path(z0, z1, s)
@@ -104,13 +111,31 @@ def train(config: dict, out_dir: str | Path) -> dict:
     n_train = train_x.shape[0]
     gen = torch.Generator().manual_seed(config["experiment"]["seed"])
 
+    # Optional informative source (S3FM-Info). When config has a `source` block,
+    # draw Z0 = S(Z1) + eta (dependent coupling) instead of Gaussian. Path, loss
+    # and endpoint formula are unchanged (source-agnostic).
+    scfg = config.get("source")
+    source_cfg = None
+    if scfg is not None:
+        source_cfg = SourceConfig(
+            kind=scfg.get("kind", "spectral"),
+            cutoff_k=scfg.get("cutoff_k", 8),
+            factor=scfg.get("factor", 4),
+            eta_std=scfg.get("eta_std", 0.05),
+        )
+        print(f"S3FM-Info source: {source_cfg}")
+
     best_val = float("inf")
     t0 = time.time()
     for step in range(tcfg["steps"]):
         model.train()
         idx = torch.randint(0, n_train, (tcfg["batch_size"],), generator=gen)
         z1 = train_x[idx]
-        z0 = torch.randn(z1.shape, generator=gen).to(device)
+        if source_cfg is None:
+            z0 = torch.randn(z1.shape, generator=gen).to(device)
+        else:
+            # dependent coupling: each source pairs with its own target
+            z0 = make_source(z1.cpu(), source_cfg, generator=gen).to(device)
         s = torch.rand(z1.shape[0], generator=gen).to(device)
         zs = interpolate_path(z0, z1, s)
         loss = flow_matching_loss(model(zs, s), z0, z1)
@@ -122,8 +147,8 @@ def train(config: dict, out_dir: str | Path) -> dict:
             logger.log({"train_loss": loss_val}, step=step)
 
         if step % tcfg["val_every"] == 0 or step == tcfg["steps"] - 1:
-            vl = val_fm_loss(ema.shadow, val_x, device)
-            er = endpoint_recovery_nrmse(ema.shadow, val_x, device)
+            vl = val_fm_loss(ema.shadow, val_x, device, source_cfg=source_cfg)
+            er = endpoint_recovery_nrmse(ema.shadow, val_x, device, source_cfg=source_cfg)
             logger.log({"val_fm_loss": vl, "val_endpoint_nrmse": er}, step=step)
             print(f"step {step:5d}  train {loss_val:.4f}  val_fm {vl:.4f}  endpoint_nrmse {er:.4f}")
             if er < best_val:

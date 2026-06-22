@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# venv
+.venv/
+venv/
+env/
+
+# experiment outputs (resolved configs + logs are saved here; data is large)
+experiments/*/
+!experiments/.gitkeep
+data_cache/
+*.pt
+*.ckpt
+*.npz
+*.npy
+checkpoints/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/

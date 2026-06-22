@@ -1,0 +1,10 @@
+# Core scientific stack. Pinned loosely for the pilot; freeze exact versions
+# with `pip freeze > requirements.lock.txt` once the environment is settled.
+torch>=2.2
+numpy>=1.24
+scipy>=1.10
+pyyaml>=6.0
+matplotlib>=3.7
+
+# testing
+pytest>=7.0

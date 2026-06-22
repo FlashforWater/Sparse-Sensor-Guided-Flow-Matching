@@ -1,0 +1,39 @@
+# --- 论文 PDF(版权,不公开)---
+*.pdf
+
+# --- Claude / agent 本地状态 ---
+.claude/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# --- 虚拟环境 ---
+.venv/
+venv/
+env/
+
+# --- 实验输出 / 大文件 / 检查点 ---
+s3fm/experiments/*/
+!s3fm/experiments/.gitkeep
+data_cache/
+*.pt
+*.ckpt
+*.npz
+*.npy
+checkpoints/
+
+# --- OS / 编辑器 ---
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# --- pytest ---
+.pytest_cache/
+.coverage
+htmlcov/

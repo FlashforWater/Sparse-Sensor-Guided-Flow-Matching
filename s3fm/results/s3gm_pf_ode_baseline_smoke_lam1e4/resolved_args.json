@@ -1,0 +1,17 @@
+{
+  "device": "mps",
+  "eval_seed": 0,
+  "eval_split": "test",
+  "info_ckpt": "experiments/kse_prior_info/final.pt",
+  "lambda0": 0.0001,
+  "mask_seed": 0,
+  "nfe": "10,20",
+  "num_windows": 8,
+  "observed_fraction": 0.15,
+  "out": "results/s3gm_pf_ode_baseline_smoke_lam1e4",
+  "reduction": "sum",
+  "score_ckpt": "experiments/kse_score_prior/best.pt",
+  "seeds": "0",
+  "solver": "euler",
+  "source_inference_ckpt": "experiments/kse_source_inference/best.pt"
+}

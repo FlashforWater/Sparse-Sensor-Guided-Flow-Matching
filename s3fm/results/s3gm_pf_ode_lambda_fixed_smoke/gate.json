@@ -1,0 +1,19 @@
+{
+  "best_pf_lambda_by_nfe": {
+    "10": 0.1,
+    "20": 0.25
+  },
+  "best_s3gm_pf_guidance_helps_by_nfe": {
+    "10": true,
+    "20": true
+  },
+  "pass_s3fm_vs_best_pf_all_nfe": true,
+  "s3fm_guidance_helps_by_nfe": {
+    "10": true,
+    "20": true
+  },
+  "s3fm_learned_guided_beats_best_s3gm_pf_by_nfe": {
+    "10": true,
+    "20": true
+  }
+}

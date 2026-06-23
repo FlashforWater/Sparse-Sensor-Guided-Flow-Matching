@@ -1,0 +1,46 @@
+# Unconditional KSE VP score prior for S3GM-PF-ODE attribution baseline.
+experiment:
+  name: kse_score_prior
+  seed: 0
+
+data:
+  system: kse
+  L: 22.0
+  Nx: 64
+  dt: 0.25
+  n_steps: 1200
+  warmup_steps: 200
+  n_trajectories: 24
+  ic_scale: 0.6
+  window_length: 20
+  stride: 4
+  train_frac: 0.6
+  val_frac: 0.2
+  split_seed: 0
+  normalization: channel_standardization
+
+model:
+  base_channels: 96
+  depth: 4
+  t_emb_dim: 96
+
+diffusion:
+  beta_min: 0.1
+  beta_max: 20.0
+  t_min: 0.001
+  t_max: 1.0
+
+validation:
+  # Mid-noise denoising is a stable checkpoint-selection proxy. Very high noise
+  # makes x0_hat divide by a tiny alpha and is too noisy for early monitoring.
+  t_val: 0.5
+
+train:
+  device: auto
+  batch_size: 64
+  steps: 4000
+  lr: 0.0003
+  ema_decay: 0.999
+  val_every: 200
+  log_every: 100
+  ckpt_every: 1000

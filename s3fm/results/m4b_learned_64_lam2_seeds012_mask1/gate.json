@@ -1,0 +1,15 @@
+{
+  "info_guidance_beats_info_unguided_by_nfe": {
+    "10": true,
+    "100": true,
+    "20": true,
+    "50": true
+  },
+  "info_guided_beats_gauss_guided_by_nfe": {
+    "10": true,
+    "100": true,
+    "20": true,
+    "50": true
+  },
+  "pass_all_matched_nfe": true
+}

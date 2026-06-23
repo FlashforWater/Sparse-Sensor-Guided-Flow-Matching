@@ -1,0 +1,19 @@
+{
+  "device": "mps",
+  "eval_seed": 0,
+  "eval_split": "test",
+  "info_ckpt": "experiments/kse_prior_info/final.pt",
+  "mask_seed": 0,
+  "nfe": "10,20,50,100",
+  "num_windows": 64,
+  "observed_fraction": 0.15,
+  "out": "results/s3gm_pf_ode_val_tuned_test_64_seeds012",
+  "pf_lambda_by_nfe": "10:0.1,20:0.25,50:0.5,100:1.0",
+  "pf_lambdas": "0,0.0001,0.001,0.01,0.1,0.25,0.5,1.0",
+  "reduction": "sum",
+  "s3fm_lambda": 2.0,
+  "score_ckpt": "experiments/kse_score_prior/best.pt",
+  "seeds": "0,1,2",
+  "solver": "euler",
+  "source_inference_ckpt": "experiments/kse_source_inference/best.pt"
+}

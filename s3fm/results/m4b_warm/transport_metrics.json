@@ -1,0 +1,36 @@
+{
+  "gauss_train_coupling": {
+    "curvature_proxy": {
+      "mean": 0.0303510632365942,
+      "std": 0.0
+    },
+    "displacement": {
+      "mean": 47.519004821777344,
+      "std": 0.0
+    }
+  },
+  "info_dependent_train_coupling": {
+    "curvature_proxy": {
+      "mean": 0.01928904466331005,
+      "std": 0.0
+    },
+    "displacement": {
+      "mean": 1.8331705331802368,
+      "std": 0.0
+    }
+  },
+  "info_marginal_inference_source": {
+    "displacement_to_eval_target": {
+      "mean": 42.547142028808594,
+      "std": 0.0
+    },
+    "note": "This is the real marginal inference source, not target-coupled S(X_true)."
+  },
+  "info_warm_inference_source": {
+    "displacement_to_eval_target": {
+      "mean": 1.9362136125564575,
+      "std": 0.0
+    },
+    "note": "This uses only sparse observations y and a fixed mask-aware low-frequency reconstruction source."
+  }
+}

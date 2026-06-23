@@ -1,0 +1,19 @@
+{
+  "curvature_steps": 50,
+  "device": "mps",
+  "eval_seed": 0,
+  "eval_split": "test",
+  "gauss_ckpt": "experiments/kse_prior/final.pt",
+  "info_ckpt": "experiments/kse_prior_info/final.pt",
+  "info_source": "marginal",
+  "lambda0": 5.0,
+  "mask_seed": 0,
+  "nfe": "10,20,50,100",
+  "num_windows": 8,
+  "observed_fraction": 0.15,
+  "out": "results/m4b",
+  "reduction": "sum",
+  "ref_windows": 1024,
+  "seeds": "0",
+  "solver": "euler"
+}

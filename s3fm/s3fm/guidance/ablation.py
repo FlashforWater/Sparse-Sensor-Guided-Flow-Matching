@@ -14,6 +14,7 @@ Sweeping NFE shows whether the informative-source advantage GROWS as NFE shrinks
 For S3FM-Info, the source at inference must match the training-source
 distribution. Two faithful options (spec §6.0):
   - marginal: sample Z0 from the empirical S(X_ref)+eta pool (information-free).
+  - warm: build a generic reconstruction from y, then apply the same S(.)+eta.
   - oracle-source (diagnostic only): Z0 = S(X_true)+eta. This uses the true
     field and is therefore an UPPER BOUND / sanity check, NOT a valid method;
     we label it clearly and never report it as the real result.
@@ -31,6 +32,7 @@ from ..flow.sources import SourceConfig, make_source, MarginalSourceSampler
 from ..guidance.cov_g import make_guided_velocity
 from ..guidance.energies import normalized_residual, observation_energy
 from ..guidance.schedules import constant
+from ..guidance.source_constructor import observation_informed_source
 from ..measurements.base import MeasurementOperator
 
 
@@ -87,6 +89,8 @@ def three_way_ablation(
     if info_source == "marginal":
         sampler = MarginalSourceSampler(reference_fields, source_cfg, seed=seed)
         z0_info = sampler.sample(x_true.shape[0], seed=seed)
+    elif info_source == "warm":
+        z0_info = observation_informed_source(observation, operator, source_cfg, seed=seed)
     elif info_source == "oracle":
         gi = torch.Generator().manual_seed(seed)
         z0_info = make_source(x_true, source_cfg, generator=gi)  # diagnostic upper bound

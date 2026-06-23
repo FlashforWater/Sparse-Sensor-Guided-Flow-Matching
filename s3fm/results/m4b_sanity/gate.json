@@ -1,0 +1,9 @@
+{
+  "info_guidance_beats_info_unguided_by_nfe": {
+    "2": false
+  },
+  "info_guided_beats_gauss_guided_by_nfe": {
+    "2": false
+  },
+  "pass_all_matched_nfe": false
+}

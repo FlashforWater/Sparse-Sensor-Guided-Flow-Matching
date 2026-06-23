@@ -1,0 +1,20 @@
+{
+  "curvature_steps": 2,
+  "device": "mps",
+  "eval_seed": 0,
+  "eval_split": "test",
+  "gauss_ckpt": "experiments/kse_prior/final.pt",
+  "info_ckpt": "experiments/kse_prior_info/final.pt",
+  "info_source": "learned",
+  "lambda0": 5.0,
+  "mask_seed": 0,
+  "nfe": "2",
+  "num_windows": 1,
+  "observed_fraction": 0.15,
+  "out": "results/m4b_learned_smoke",
+  "reduction": "sum",
+  "ref_windows": 16,
+  "seeds": "0",
+  "solver": "euler",
+  "source_inference_ckpt": "experiments/kse_source_inference_smoke/final.pt"
+}

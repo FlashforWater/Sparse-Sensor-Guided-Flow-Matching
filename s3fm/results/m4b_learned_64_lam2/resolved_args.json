@@ -1,0 +1,20 @@
+{
+  "curvature_steps": 50,
+  "device": "mps",
+  "eval_seed": 0,
+  "eval_split": "test",
+  "gauss_ckpt": "experiments/kse_prior/final.pt",
+  "info_ckpt": "experiments/kse_prior_info/final.pt",
+  "info_source": "learned",
+  "lambda0": 2.0,
+  "mask_seed": 0,
+  "nfe": "10,20,50,100",
+  "num_windows": 64,
+  "observed_fraction": 0.15,
+  "out": "results/m4b_learned_64_lam2",
+  "reduction": "sum",
+  "ref_windows": 1024,
+  "seeds": "0",
+  "solver": "euler",
+  "source_inference_ckpt": "experiments/kse_source_inference/best.pt"
+}

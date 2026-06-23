@@ -1,0 +1,40 @@
+# Amortized observation-to-source inference q_phi(U | y,H) for KSE.
+experiment:
+  name: kse_source_inference
+  seed: 0
+
+data:
+  system: kse
+  L: 22.0
+  Nx: 64
+  dt: 0.25
+  n_steps: 1200
+  warmup_steps: 200
+  n_trajectories: 24
+  ic_scale: 0.6
+  window_length: 20
+  stride: 4
+  train_frac: 0.6
+  val_frac: 0.2
+  split_seed: 0
+  normalization: channel_standardization
+
+source:
+  kind: spectral
+  cutoff_k: 8
+  eta_std: 0.05
+
+source_inference:
+  observed_fraction: 0.15
+  val_windows: 256
+  model:
+    base_channels: 48
+    depth: 3
+
+train:
+  device: auto
+  batch_size: 64
+  steps: 3000
+  lr: 0.0003
+  log_every: 100
+  val_every: 200

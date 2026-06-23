@@ -32,6 +32,7 @@ from ..flow.sources import SourceConfig, make_source, MarginalSourceSampler
 from ..guidance.cov_g import make_guided_velocity
 from ..guidance.energies import normalized_residual, observation_energy
 from ..guidance.schedules import constant
+from ..guidance.source_inference import learned_observation_informed_source
 from ..guidance.source_constructor import observation_informed_source
 from ..measurements.base import MeasurementOperator
 
@@ -76,6 +77,7 @@ def three_way_ablation(
     seed: int = 0,
     device: torch.device | str = "cpu",
     info_source: str = "marginal",
+    source_inference_model: torch.nn.Module | None = None,
 ) -> list[AblationRow]:
     """Run the three modes across an NFE sweep. Returns a flat list of rows."""
     device = torch.device(device)
@@ -91,6 +93,11 @@ def three_way_ablation(
         z0_info = sampler.sample(x_true.shape[0], seed=seed)
     elif info_source == "warm":
         z0_info = observation_informed_source(observation, operator, source_cfg, seed=seed)
+    elif info_source == "learned":
+        if source_inference_model is None:
+            raise ValueError("info_source='learned' requires source_inference_model")
+        source_inference_model = source_inference_model.to(device).eval()
+        z0_info = learned_observation_informed_source(source_inference_model, observation.to(device), operator, seed=seed)
     elif info_source == "oracle":
         gi = torch.Generator().manual_seed(seed)
         z0_info = make_source(x_true, source_cfg, generator=gi)  # diagnostic upper bound

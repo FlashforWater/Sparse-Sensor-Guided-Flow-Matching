@@ -34,6 +34,7 @@ from ..data.windows import add_channel_axis, extract_windows
 from ..flow.sampling import load_prior
 from ..flow.sources import SourceConfig, MarginalSourceSampler, make_source
 from ..guidance.ablation import AblationRow, three_way_ablation
+from ..guidance.source_inference import learned_observation_informed_source, load_source_inference
 from ..guidance.source_constructor import observation_informed_source
 from ..measurements.base import MaskOperator
 from ..reproducibility import seed_everything
@@ -127,9 +128,11 @@ def _transport_metrics(
     seeds: list[int],
     curvature_steps: int,
     device: torch.device,
+    source_inference_model=None,
 ) -> dict:
     out: dict[str, dict[str, float]] = {}
     gauss_disp, info_disp, marginal_disp, warm_disp = [], [], [], []
+    learned_disp, learned_nrmse = [], []
     gauss_curv, info_curv = [], []
 
     for seed in seeds:
@@ -144,6 +147,15 @@ def _transport_metrics(
         info_disp.append(float(_flat_norm_per_item(x_eval - z0_info).mean()))
         marginal_disp.append(float(_flat_norm_per_item(x_eval - z0_marginal).mean()))
         warm_disp.append(float(_flat_norm_per_item(x_eval - z0_warm).mean()))
+        if source_inference_model is not None:
+            z0_learned = learned_observation_informed_source(
+                source_inference_model.to(device).eval(),
+                observation.to(device),
+                operator,
+                seed=seed,
+            ).cpu()
+            learned_disp.append(float(_flat_norm_per_item(x_eval - z0_learned).mean()))
+            learned_nrmse.append(float(torch.norm(x_eval - z0_learned) / torch.norm(x_eval)))
         gauss_curv.append(_path_curvature_proxy(gauss_model, z0_gauss, curvature_steps, device))
         info_curv.append(_path_curvature_proxy(info_model, z0_info, curvature_steps, device))
 
@@ -167,6 +179,12 @@ def _transport_metrics(
         "displacement_to_eval_target": summarize(warm_disp),
         "note": "This uses only sparse observations y and a fixed mask-aware low-frequency reconstruction source.",
     }
+    if learned_disp:
+        out["info_learned_inference_source"] = {
+            "displacement_to_eval_target": summarize(learned_disp),
+            "nrmse_to_eval_target": summarize(learned_nrmse),
+            "note": "This uses q_phi(y,H) projected to the low-bandwidth source space, not x_true.",
+        }
     return out
 
 
@@ -272,6 +290,15 @@ def _write_readme(path: Path, args, summary: list[dict], metrics: dict, flags: d
         f"- Train-coupled curvature proxy, Info: `{ic:.4f}`",
         f"- Marginal inference source displacement to current eval target: `{md:.4f}`",
         f"- Warm inference source displacement to current eval target: `{wd:.4f}`",
+    ]
+    if "info_learned_inference_source" in metrics:
+        ld = metrics["info_learned_inference_source"]["displacement_to_eval_target"]["mean"]
+        ln = metrics["info_learned_inference_source"]["nrmse_to_eval_target"]["mean"]
+        lines += [
+            f"- Learned inference source displacement to current eval target: `{ld:.4f}`",
+            f"- Learned inference source nRMSE to current eval target: `{ln:.4f}`",
+        ]
+    lines += [
         "",
         "The marginal source is distribution-matched but not target-short. The warm source is a fixed measurement-informed low-frequency reconstruction from `y`, not an oracle `S(X_true)`.",
         "",
@@ -299,7 +326,8 @@ def main() -> None:
     parser.add_argument("--eval-seed", type=int, default=0)
     parser.add_argument("--solver", default="euler", choices=["euler", "midpoint", "rk4"])
     parser.add_argument("--reduction", default="sum", choices=["sum", "mean"])
-    parser.add_argument("--info-source", default="marginal", choices=["marginal", "warm", "oracle"])
+    parser.add_argument("--info-source", default="marginal", choices=["marginal", "warm", "learned", "oracle"])
+    parser.add_argument("--source-inference-ckpt", default=None)
     parser.add_argument("--curvature-steps", type=int, default=50)
     args = parser.parse_args()
 
@@ -311,6 +339,11 @@ def main() -> None:
     info_prior = load_prior(args.info_ckpt, device=args.device)
     device = info_prior.device
     source_cfg = _source_config(info_prior.config)
+    source_inference_model = None
+    if args.info_source == "learned":
+        if args.source_inference_ckpt is None:
+            raise ValueError("--info-source learned requires --source-inference-ckpt")
+        source_inference_model = load_source_inference(args.source_inference_ckpt, device=args.device).model
 
     train_x, _ = _build_windows(info_prior.config, info_prior.standardizer, "train")
     eval_x_all, _ = _build_windows(info_prior.config, info_prior.standardizer, args.eval_split)
@@ -340,6 +373,7 @@ def main() -> None:
             seed=seed,
             device=device,
             info_source=args.info_source,
+            source_inference_model=source_inference_model,
         )
         for row in rows:
             raw_rows.append({
@@ -362,6 +396,7 @@ def main() -> None:
         seeds,
         args.curvature_steps,
         device,
+        source_inference_model=source_inference_model,
     )
     flags = _gate_flags(summary)
 

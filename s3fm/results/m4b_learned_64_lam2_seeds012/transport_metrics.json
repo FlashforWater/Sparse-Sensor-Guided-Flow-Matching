@@ -1,0 +1,47 @@
+{
+  "gauss_train_coupling": {
+    "curvature_proxy": {
+      "mean": 0.03113267260293166,
+      "std": 2.0498775613472827e-05
+    },
+    "displacement": {
+      "mean": 49.572747548421226,
+      "std": 0.1217551699096487
+    }
+  },
+  "info_dependent_train_coupling": {
+    "curvature_proxy": {
+      "mean": 0.01952640029291312,
+      "std": 6.807589053476017e-05
+    },
+    "displacement": {
+      "mean": 2.1694276332855225,
+      "std": 0.0034848696756556046
+    }
+  },
+  "info_learned_inference_source": {
+    "displacement_to_eval_target": {
+      "mean": 3.256478786468506,
+      "std": 0.004448101321888444
+    },
+    "note": "This uses q_phi(y,H) projected to the low-bandwidth source space, not x_true.",
+    "nrmse_to_eval_target": {
+      "mean": 0.11213647822539012,
+      "std": 4.074912288984203e-05
+    }
+  },
+  "info_marginal_inference_source": {
+    "displacement_to_eval_target": {
+      "mean": 47.89450454711914,
+      "std": 0.9655738155721648
+    },
+    "note": "This is the real marginal inference source, not target-coupled S(X_true)."
+  },
+  "info_warm_inference_source": {
+    "displacement_to_eval_target": {
+      "mean": 2.626898765563965,
+      "std": 0.002193978944057271
+    },
+    "note": "This uses only sparse observations y and a fixed mask-aware low-frequency reconstruction source."
+  }
+}

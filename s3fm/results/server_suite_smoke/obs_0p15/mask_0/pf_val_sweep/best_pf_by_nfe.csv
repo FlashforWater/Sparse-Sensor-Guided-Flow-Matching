@@ -1,0 +1,2 @@
+mode,nfe,lambda0,n_seeds,nrmse_mean,nrmse_std,obs_residual_mean,obs_residual_std
+A_s3gm_pf_guided,10,0.25,1,0.911529004573822,0.0,0.8673704266548157,0.0

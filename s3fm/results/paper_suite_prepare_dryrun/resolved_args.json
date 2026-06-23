@@ -1,0 +1,23 @@
+{
+  "device": "cuda",
+  "dry_run": true,
+  "eval_seed": 0,
+  "gauss_ckpt": "experiments/paper/kse_prior/final.pt",
+  "info_ckpt": "experiments/paper/kse_prior_info/final.pt",
+  "mask_seeds": "0",
+  "nfe": "10",
+  "num_windows": 8,
+  "observed_fractions": "0.15",
+  "out": "results/paper_suite_prepare_dryrun",
+  "overwrite": false,
+  "pf_lambdas": "0,0.1",
+  "reduction": "sum",
+  "ref_windows": 1024,
+  "s3fm_lambda": 2.0,
+  "score_ckpt": "experiments/paper/kse_score_prior/best.pt",
+  "seeds": "0",
+  "skip_m4b": false,
+  "skip_pf": false,
+  "solver": "euler",
+  "source_inference_ckpt": "experiments/paper/kse_source_inference/best.pt"
+}

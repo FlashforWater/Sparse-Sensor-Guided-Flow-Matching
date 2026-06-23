@@ -1,0 +1,4 @@
+mode,nfe,n_seeds,nrmse_mean,nrmse_std,obs_residual_mean,obs_residual_std
+A_gauss_guided,10,1,0.24077844619750977,0.0,0.19654251635074615,0.0
+B_info_guided,10,1,0.05094414949417114,0.0,0.023560544475913048,0.0
+C_info_unguided,10,1,0.05578240007162094,0.0,0.0343799814581871,0.0

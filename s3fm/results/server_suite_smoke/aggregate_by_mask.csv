@@ -1,0 +1,2 @@
+observed_fraction,mask_seed,nfe,m4b_pass_all,pf_val_tuned_gate,gauss_guided_nrmse,s3fm_learned_guided_nrmse,s3fm_learned_unguided_nrmse,pf_val_selected_lambda,pf_val_tuned_guided_nrmse,pf_val_tuned_guided_std,pf_unguided_nrmse,pf_runner_s3fm_guided_nrmse,pf_runner_s3fm_unguided_nrmse,learned_source_disp,learned_source_nrmse
+0.15,0,10,True,True,0.24077844619750977,0.05094414949417114,0.05578240007162094,0.25,0.8745946884155273,0.0,1.2269561290740967,0.05094414949417114,0.05578240007162094,2.8071470260620117,0.09024953842163086

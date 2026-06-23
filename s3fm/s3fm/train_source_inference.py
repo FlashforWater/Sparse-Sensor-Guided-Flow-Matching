@@ -45,6 +45,26 @@ def val_source_nrmse(model, val_x, observed_fraction: float, mask_seed: int, dev
     return float(torch.norm(pred - target) / (torch.norm(target) + 1e-8))
 
 
+def _observed_fractions(config: dict) -> list[float]:
+    scfg = config["source_inference"]
+    if "observed_fractions" in scfg:
+        values = scfg["observed_fractions"]
+    else:
+        values = scfg["observed_fraction"]
+    if isinstance(values, str):
+        values = [float(x.strip()) for x in values.split(",") if x.strip()]
+    elif isinstance(values, (int, float)):
+        values = [float(values)]
+    else:
+        values = [float(x) for x in values]
+    if not values:
+        raise ValueError("source_inference observed_fractions cannot be empty")
+    for value in values:
+        if not (0.0 < value <= 1.0):
+            raise ValueError(f"observed fraction must be in (0,1], got {value}")
+    return values
+
+
 def train(config: dict, out_dir: str | Path) -> dict:
     out_dir = Path(out_dir)
     seed_everything(config["experiment"]["seed"])
@@ -65,7 +85,7 @@ def train(config: dict, out_dir: str | Path) -> dict:
     print(f"source inference params: {nparam/1e6:.3f}M")
 
     tcfg = config["train"]
-    observed_fraction = config["source_inference"]["observed_fraction"]
+    observed_fractions = _observed_fractions(config)
     opt = torch.optim.Adam(model.parameters(), lr=tcfg["lr"])
     train_x = train_x.to(device)
     n_train = train_x.shape[0]
@@ -78,6 +98,8 @@ def train(config: dict, out_dir: str | Path) -> dict:
         idx = torch.randint(0, n_train, (tcfg["batch_size"],), generator=gen)
         x = train_x[idx]
         mask_seed = int(torch.randint(0, 2**31 - 1, (1,), generator=gen).item())
+        frac_idx = int(torch.randint(0, len(observed_fractions), (1,), generator=gen).item())
+        observed_fraction = observed_fractions[frac_idx]
         H = MaskOperator.random(x.shape[1], x.shape[2], x.shape[3], observed_fraction=observed_fraction, seed=mask_seed)
         y = H(x)
         loss = source_inference_loss(model, x, y, H)
@@ -90,9 +112,16 @@ def train(config: dict, out_dir: str | Path) -> dict:
 
         if step % tcfg["val_every"] == 0 or step == tcfg["steps"] - 1:
             val_subset = val_x[: min(config["source_inference"]["val_windows"], val_x.shape[0])]
-            vn = val_source_nrmse(model, val_subset, observed_fraction, mask_seed=1234, device=device)
-            logger.log({"val_source_nrmse": vn}, step=step)
-            print(f"step {step:5d}  train {float(loss.detach().cpu()):.5f}  val_source_nrmse {vn:.5f}")
+            val_by_fraction = {
+                f"{frac:g}": val_source_nrmse(model, val_subset, frac, mask_seed=1234, device=device)
+                for frac in observed_fractions
+            }
+            vn = sum(val_by_fraction.values()) / len(val_by_fraction)
+            logger.log({"val_source_nrmse": vn, "val_source_nrmse_by_fraction": val_by_fraction}, step=step)
+            print(
+                f"step {step:5d}  train {float(loss.detach().cpu()):.5f}  "
+                f"val_source_nrmse {vn:.5f}  by_fraction {val_by_fraction}"
+            )
             if vn < best_val:
                 best_val = vn
                 _save_ckpt(out_dir / "best.pt", model, config, step, vn)

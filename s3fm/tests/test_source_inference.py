@@ -12,6 +12,7 @@ from s3fm.guidance.source_inference import (
     source_inference_target,
 )
 from s3fm.measurements.base import MaskOperator
+from s3fm.train_source_inference import _observed_fractions
 
 
 def _batch(b=3, T=5, Nx=32, seed=0):
@@ -66,3 +67,13 @@ def test_learned_observation_informed_source_seed_controls_eta():
     c = learned_observation_informed_source(model, y, H, seed=7)
     assert torch.equal(a, b)
     assert not torch.equal(a, c)
+
+
+def test_observed_fractions_supports_single_and_multi_configs():
+    single = {"source_inference": {"observed_fraction": 0.15}}
+    multi = {"source_inference": {"observed_fractions": [0.05, 0.1, 0.3]}}
+    text = {"source_inference": {"observed_fractions": "0.05,0.1,0.3"}}
+
+    assert _observed_fractions(single) == [0.15]
+    assert _observed_fractions(multi) == [0.05, 0.1, 0.3]
+    assert _observed_fractions(text) == [0.05, 0.1, 0.3]

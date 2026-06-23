@@ -1,0 +1,35 @@
+# Paper-scale unconditional KSE flow-matching prior (S3FM-Gauss control).
+experiment:
+  name: paper_kse_flow_prior
+  seed: 0
+
+data:
+  system: kse
+  L: 22.0
+  Nx: 64
+  dt: 0.25
+  n_steps: 1600
+  warmup_steps: 400
+  n_trajectories: 128
+  ic_scale: 0.6
+  window_length: 20
+  stride: 4
+  train_frac: 0.7
+  val_frac: 0.15
+  split_seed: 0
+  normalization: channel_standardization
+
+model:
+  base_channels: 128
+  depth: 4
+  t_emb_dim: 128
+
+train:
+  device: cuda
+  batch_size: 128
+  steps: 30000
+  lr: 0.0003
+  ema_decay: 0.999
+  val_every: 500
+  log_every: 100
+  ckpt_every: 5000
